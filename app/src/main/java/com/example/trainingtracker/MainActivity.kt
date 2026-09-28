@@ -5,9 +5,11 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
@@ -30,6 +32,9 @@ import androidx.compose.ui.graphics.Color
 import com.example.trainingtracker.model.Category
 import com.example.trainingtracker.model.MeasurementType
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.focus.focusModifier
 import androidx.compose.ui.text.input.KeyboardType
 
 class MainActivity : ComponentActivity() {
@@ -99,11 +104,50 @@ fun TrackedItemRow(item: TrackedItem){
             }
 
             is MeasurementType.Time -> {
-                Text(text = "${measurementType.hours}:${measurementType.minutes}")
+                var hours by remember { mutableStateOf(measurementType.hours.toString()) }
+                var minutes by remember { mutableStateOf(measurementType.minutes.toString()) }
+
+                OutlinedTextField(
+                    value = hours,
+                    onValueChange = { newValue ->
+                        hours = newValue
+                        measurementType.hours = newValue.toIntOrNull() ?: 0
+                    },
+                    label = {Text("h")},
+                    modifier = Modifier.width(70.dp),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    singleLine = true
+                )
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                OutlinedTextField(
+                    value = minutes,
+                    onValueChange = { newValue ->
+                        minutes = newValue
+                        measurementType.minutes = newValue.toIntOrNull() ?: 0
+                    },
+                    label = {Text("min")},
+                    modifier = Modifier.width(70.dp),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    singleLine = true
+                )
             }
 
             is MeasurementType.Distance -> {
-                Text(text = "${measurementType.kilometers} km")
+                var distance by remember {mutableStateOf(measurementType.kilometers.toString())}
+
+                OutlinedTextField(
+                    value = distance,
+                    onValueChange = { newValue ->
+                        distance = newValue
+                        measurementType.kilometers = newValue.toDoubleOrNull() ?: 0.0
+                    },
+                    label = {Text("km")},
+                    modifier = Modifier.width(100.dp),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                    singleLine = true
+                )
             }
         }
     }
