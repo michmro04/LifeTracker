@@ -1,4 +1,4 @@
-package com.example.trainingtracker.ui.theme
+package com.example.lifetracker.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

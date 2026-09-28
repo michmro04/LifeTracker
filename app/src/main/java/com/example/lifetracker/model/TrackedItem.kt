@@ -1,4 +1,4 @@
-package com.example.trainingtracker.model
+package com.example.lifetracker.model
 
 sealed class MeasurementType {
     //amoun of habit e.g. amount of exercises, read books, solved rubiks cubes, baked cakes
