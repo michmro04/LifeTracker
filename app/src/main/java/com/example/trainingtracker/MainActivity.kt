@@ -5,10 +5,9 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
@@ -17,7 +16,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.trainingtracker.ui.theme.TrainingTrackerTheme
-import com.example.trainingtracker.model.Exercise
+import com.example.trainingtracker.model.TrackedItem
 import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -26,9 +25,12 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.graphics.Color
+import com.example.trainingtracker.model.Category
+import com.example.trainingtracker.model.MeasurementType
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,7 +41,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    ExerciseScreen()
+                    TrackerScreen()
                 }
             }
         }
@@ -47,99 +49,71 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun ExerciseScreen(){
-    val exercise = remember {
+fun TrackerScreen(){
+    val trackedItems = remember {
         mutableStateListOf(
-            Exercise("Pompki", 5),
-            Exercise("Wykroki", 10),
-            Exercise("Brzuszki", 15)
+            TrackedItem("1","Push ups", Category.SPORT, MeasurementType.Count(0)),
+            TrackedItem("2","Rubik's cube", Category.HOBBY, MeasurementType.Time(1,30)),
+            TrackedItem("3","Running", Category.SPORT, MeasurementType.Distance(10.0))
         )
     }
 
-    var newExerciseName by remember {mutableStateOf("")}
-
-    Column {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ){
-            TextField(
-                value = newExerciseName,
-                onValueChange = {newExerciseName = it},
-                label = {Text("Nazwa ćwiczenia")},
-                modifier = Modifier.weight(1f)
-            )
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            Button(
-                onClick = {
-                    if(newExerciseName.isNotBlank()){
-                        exercise.add(Exercise(newExerciseName.trim(), 0))
-                        newExerciseName = ""
-                    }
-                }
-            ) {
-                Text(text = "Dodaj")
-            }
-        }
-
-        LazyColumn{
-            items(exercise){ singleExercise ->
-                ExerciseRow(exercise = singleExercise)
-            }
+    LazyColumn {
+        items(trackedItems) { item ->
+            TrackedItemRow(item = item)
         }
     }
 }
+
 
 @Preview(showBackground = true)
 @Composable
 fun ExerciseScreenPreview(){
-    ExerciseScreen()
+    TrackerScreen()
 }
 
 @Composable
-fun ExerciseList() {
-    val myExercises = listOf(
-        Exercise("Pompki", 5),
-        Exercise("Wykroki", 10),
-        Exercise("Brzuszki", 15)
-    )
-
-    LazyColumn() {
-        items(myExercises) { singleExercise ->
-            ExerciseRow(exercise = singleExercise)
-        }
-    }
-}
-
-
-@Composable
-fun ExerciseRow(exercise: Exercise){
-    var reps by remember { mutableIntStateOf(exercise.reps) }
-
+fun TrackedItemRow(item: TrackedItem){
     Row(
-        modifier = Modifier.padding(16.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ){
-        Text(text = exercise.name)
-        Spacer(modifier = Modifier.weight(1f))
+        Column(modifier = Modifier.weight(1f))
+        {
+             Text(text = item.name, style= MaterialTheme.typography.titleMedium)
+             Text(text = item.category.name, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+        }
 
+        when (val measurementType = item.measurementType) {
+            is MeasurementType.Count -> {
+                var count by remember { mutableIntStateOf(measurementType.currentCount) }
+                Text(text = count.toString(), modifier = Modifier.padding(end = 16.dp))
+                Button(onClick = {
+                    count++
+                    measurementType.currentCount = count
+                }) {
+                    Text(text = "+")
+                }
+            }
 
-        Button(onClick = {
-            reps+=1
-            exercise.reps = reps
-        }) {
-            Text(text = reps.toString())
-            Text(text = " | +")
+            is MeasurementType.Time -> {
+                Text(text = "${measurementType.hours}:${measurementType.minutes}")
+            }
+
+            is MeasurementType.Distance -> {
+                Text(text = "${measurementType.kilometers} km")
+            }
         }
     }
 }
+
 
 @Preview(showBackground = true)
 @Composable
-fun ExerciseRowPreview(){
-    ExerciseRow(Exercise("Pompki", 5))
+fun TrackedItemRowPreview(){
+    TrackedItemRow(TrackedItem("1", "Push ups", Category.SPORT, MeasurementType.Count(0)))
 }
 
 
