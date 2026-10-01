@@ -5,9 +5,13 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [TrackedItemEntity::class], version = 1, exportSchema = false)
+@Database(
+    entities = [CategoryEntity::class, ActivityEntity::class, TrackedItemEntity::class],
+    version = 2,
+    exportSchema = false
+)
 abstract class AppDatabase : RoomDatabase() {
-    abstract fun trackedItemDao(): TrackedItemDao
+    abstract fun appDao(): AppDao
 
     companion object {
         @Volatile
@@ -19,7 +23,9 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "lifetracker_database"
-                ).build()
+                )
+                    .fallbackToDestructiveMigration()
+                    .build()
                 INSTANCE = instance
                 instance
             }

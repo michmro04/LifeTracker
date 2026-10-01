@@ -37,15 +37,18 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.lifecycle.lifecycleScope
-import com.example.lifetracker.data.AppDatabase
-import com.example.lifetracker.data.TrackedItemEntity
+import com.example.lifetracker.data.*
 import com.example.lifetracker.ui.home.HomeScreen
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import com.example.lifetracker.ui.home.AddActivityDialog
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val db = AppDatabase.getDatabase(this)
+        val dao = db.appDao()
 
         setContent {
             TrainingTrackerTheme {
@@ -53,15 +56,39 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    HomeScreen(
+                    var showAddDialog by remember { mutableStateOf(false) }
+
+                    HomeScreen (
                         onAddActivityClick = {
-                            Toast.makeText(
-                                this,
-                                "Tutaj panel dodawania aktywności!",
-                                Toast.LENGTH_SHORT
-                            ).show()
+                            showAddDialog = true
                         }
                     )
+
+                    if(showAddDialog){
+                        AddActivityDialog(
+                            onDismiss = { showAddDialog = false },
+                            onSave = { categoryName, activityName, count, distance ->
+                                lifecycleScope.launch(Dispatchers.IO) {
+                                    val catId = dao.insertCategory(CategoryEntity(name = categoryName))
+                                    val actId = dao.insertActivity(
+                                        ActivityEntity(
+                                            categoryId = if (catId > 0) catId else 1L,
+                                            name = activityName,
+                                            measurementType = if (distance > 0.0) "DISTANCE" else if (count > 0) "COUNT" else "TIME"
+                                        )
+                                    )
+                                    dao.insertLog(
+                                        TrackedItemEntity(
+                                            activityId = if (actId > 0) actId else 1L,
+                                            countValue = count,
+                                            distanceKm = distance
+                                        )
+                                    )
+                                }
+                                showAddDialog = false
+                            }
+                        )
+                    }
                 }
             }
         }

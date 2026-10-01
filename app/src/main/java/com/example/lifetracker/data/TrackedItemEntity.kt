@@ -5,12 +5,11 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "tracked_items")
 data class TrackedItemEntity(
-    @PrimaryKey val id: String,
-    val name: String,
-    val categoryName: String,
-    val measurementTypeString: String,
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val activityId: Long,
     val countValue: Int = 0,
     val timeHours: Int = 0,
     val timeMinutes: Int = 0,
-    val distanceKm: Double = 0.0
+    val distanceKm: Double = 0.0,
+    val timestamp: Long = System.currentTimeMillis()
 )
